@@ -2,7 +2,7 @@
 
 Отдельный сайт [ryazpressa.ru](https://ryazpressa.ru/). Каркас — Nuxt 4.5 (`srcDir: app/`), **SPA** (`ssr: false`), TypeScript, ESLint + Prettier + Stylelint, Husky, SCSS-токены `--fs-*`, HTTP API (`useApi` / `useApiFetch` / `serverApi`). Пакет — **pnpm**.
 
-Мультисайт 25 изданий здесь не живёт. Разделы (новости, округа, проекты, документы, контакты, подписка) подключаются поверх этого каркаса.
+Мультисайт 25 изданий здесь не живёт. Разделы: новости, округа, рядом с нами, проекты, документы, контакты, подписка. Галереи нет.
 
 GitLab: `gitlab.com/llcsavin/ryazpressa-root`.
 
@@ -20,7 +20,7 @@ NUXT_USE_MOCK_API=false
 
 ## Правила Cursor (Agent)
 
-В репозитории лежат `.cursor/` (rules, commands, пустой `mcp.json`), `AGENTS.md` и `.planning/`. MCP-серверы — в User `~/.cursor/mcp.json`; проектный `mcpServers` не заполнять, иначе Cursor отключает пользовательские копии с теми же именами.
+`.cursor/`, `AGENTS.md` и `.planning/` лежат локально и в git не входят. MCP-серверы — в User `~/.cursor/mcp.json`; проектный `mcpServers` не заполнять, иначе Cursor отключает пользовательские копии с теми же именами.
 
 | Режим       | Правила                                          |
 | ----------- | ------------------------------------------------ |

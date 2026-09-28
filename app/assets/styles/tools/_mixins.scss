@@ -1,6 +1,5 @@
 @use '../variables/resolutions' as bp;
 
-/** ≥ 576px. База для узкого телефона — стили без миксина. */
 @mixin from-mobile {
   @media (min-width: #{bp.$mobile}) {
     @content;
@@ -14,7 +13,7 @@
 }
 
 @mixin from-desktop {
-  @media (min-width: #{bp.$desktop}) {
+  @media (min-width: #{bp.$desktopMin}) {
     @content;
   }
 }
