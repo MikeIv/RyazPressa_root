@@ -1,0 +1,53 @@
+---
+description: Рязпресса — один сайт, SPA, API, эталоны
+alwaysApply: true
+---
+
+# Рязпресса
+
+**Пакет:** `ryazpressa-root` · **GitLab:** `gitlab.com/llcsavin/ryazpressa-root` · **SSR:** выкл. (`ssr: false`)
+
+**Продукт:** отдельный сайт ryazpressa.ru. Мультиаренда и реестр доменов не используются.
+
+Детали: `.planning/PROJECT.md`.
+
+## Команды
+
+```bash
+pnpm dev | typecheck | verify | build | lint:all
+```
+
+## Эталоны (читать, не искать)
+
+| Что | Путь |
+| --- | --- |
+| API client | `app/composables/useApi.ts` |
+| Server HTTP | `server/utils/serverApi.ts` |
+| URL API | `shared/utils/normalizeApiBaseUrl.ts` |
+| Layout | `app/layouts/default.vue` |
+| Токены / mixins | `app/assets/styles/` (`--fs-*`, `tools/_mixins.scss`) |
+| Public runtime | `types/nuxt-public.d.ts` |
+
+Стек и код-стиль — `nuxt-template.mdc` (при правках `app/`, `server/`, `shared/`).
+
+## API
+
+- `NUXT_PUBLIC_API_BASE=https://api.ryazpressa.ru` → `runtimeConfig.public.apiBase`
+- `NUXT_PUBLIC_SITE_CONFIG_API_BASE=https://api.ryazpressa.ru` → `runtimeConfig.public.siteConfigApiBase` (`GET /api/_site`)
+- `NUXT_USE_MOCK_API=false` → `runtimeConfig.useMockApi` (включается только при значении `true`)
+
+## MCP
+
+Серверы — **User** `~/.cursor/mcp.json`. Проектный `.cursor/mcp.json` — пустой `mcpServers`.
+
+- Доки библиотек → **context7**
+- Nuxt API / модули → **nuxt**
+- Код проекта → read/grep; широкий поиск → Task explore
+
+## Ограничения
+
+- GitLab; коммиты по просьбе; не коммитить `.env`
+- Не включать SSR, не менять `srcDir`, ESLint/Husky pipeline, массовые `--fs-*` без запроса
+- API только через `useApi` / `useApiFetch` / `serverApi`
+- Не переносить сюда реестр сайтов из `Ryazpressa_nuxt`
+- **M+:** `cp .planning/brief-template.md .planning/brief.md` или `/brief`
