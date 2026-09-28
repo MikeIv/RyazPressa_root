@@ -1,8 +1,7 @@
 import { ensureSiteConfigLoaded } from '~/composables/useSiteConfig'
-import type { SiteSections } from '#shared/types/site'
 
 export default defineNuxtRouteMiddleware(async (to) => {
-  const section = to.meta.section as keyof SiteSections | undefined
+  const section = to.meta.section
   if (!section) return
 
   const site = await ensureSiteConfigLoaded()

@@ -1,11 +1,13 @@
-# install → verify (lint + types) → build. Node 22 = engines.package.json.
+# install → verify → generate (статический SPA). Node 22, pnpm из packageManager.
 
-stages:
-  - verify
-  - build
+image: node:22-bookworm
+
+variables:
+  PNPM_VERSION: '11.1.1'
+  NUXT_PUBLIC_API_BASE: 'https://api.ryazpressa.ru'
+  PNPM_STORE_PATH: .pnpm-store
 
 default:
-  image: node:22
   interruptible: true
   cache:
     key:
@@ -15,17 +17,27 @@ default:
       - .pnpm-store
   before_script:
     - corepack enable
-    - pnpm config set store-dir .pnpm-store
+    - corepack prepare pnpm@${PNPM_VERSION} --activate
+    - pnpm config set store-dir ${PNPM_STORE_PATH}
     - pnpm install --frozen-lockfile
 
+stages:
+  - test
+  - build
+
 verify:
-  stage: verify
+  stage: test
   script:
     - pnpm verify
 
-build:
+generate:
   stage: build
-  script:
-    - pnpm build
   needs:
     - verify
+  script:
+    - pnpm generate
+  artifacts:
+    name: static-spa-${CI_COMMIT_SHORT_SHA}
+    paths:
+      - .output/public/
+    expire_in: 2 weeks

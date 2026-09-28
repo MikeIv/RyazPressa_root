@@ -113,7 +113,7 @@ pnpm approve-builds --all
 - **`NUXT_USE_MOCK_API`** по умолчанию выключен (`runtimeConfig.useMockApi`).
 - Клиент: **`useApi()`** (`$fetch` с `baseURL`) и **`useApiFetch()`** (полный URL = `apiBase` + путь, без `baseURL` в опциях `useFetch`) — [`app/composables/useApi.ts`](app/composables/useApi.ts).
 - Сервер: **`serverApi(event?)`** — [`server/utils/serverApi.ts`](server/utils/serverApi.ts); URL — [`shared/utils/normalizeApiBaseUrl.ts`](shared/utils/normalizeApiBaseUrl.ts) (`normalizeApiBaseUrl`, `joinApiUrl`).
-- Типизация `apiBase`, `siteConfigApiBase`, `useMockApi` — [`types/nuxt-public.d.ts`](types/nuxt-public.d.ts).
+- Типизация `apiBase`, `siteConfigApiBase`, `useMockApi` — [`shared/types/nuxt-public.d.ts`](shared/types/nuxt-public.d.ts). Ambient-типы держим под `app/**` и `shared/**`: `nuxt build` генерирует tsconfig в `node_modules/.cache/nuxt/.nuxt/`, где относительный путь вида `../types/**` указывает в пустоту.
 
 ## Документация
 

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="168" height="112" viewBox="0 0 168 112" fill="none" role="img" aria-label="Иллюстрация к новости">
+  <rect width="168" height="112" fill="#eff3f7"/>
+  <rect x="54" y="28" width="60" height="44" rx="4" stroke="#9aa8b8" stroke-width="2"/>
+  <circle cx="70" cy="42" r="5" fill="#9aa8b8"/>
+  <path d="M58 66l14-14 10 10 8-8 20 16" stroke="#9aa8b8" stroke-width="2" stroke-linejoin="round"/>
+  <rect x="54" y="80" width="60" height="4" rx="2" fill="#c5d0dc"/>
+</svg>
