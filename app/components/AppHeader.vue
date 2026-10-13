@@ -4,24 +4,58 @@ import { useAccessibilityModal } from '~/composables/useAccessibilityModal'
 
 const { site } = useSiteConfig()
 const route = useRoute()
-const { isOpen: isFooterOpen, toggle: toggleFooter, close: closeFooter } = useFooterPanel()
-const { isOpen: isAccessibilityOpen, open: openAccessibilityModal, close: closeAccessibilityModal, setTrigger } =
-  useAccessibilityModal()
+const {
+  isOpen: isAccessibilityOpen,
+  open: openAccessibilityModal,
+  close: closeAccessibilityModal,
+  setTrigger,
+} = useAccessibilityModal()
 
-const logoFailed = ref(false)
+const headerRef = ref<HTMLElement | null>(null)
 const accessibilityBtnRef = ref<HTMLButtonElement | null>(null)
+const logoFailed = ref(false)
+const isMenuOpen = ref(false)
+
+/** Пункт меню раздела подписки — на десктопе кнопка у поиска (как на старом сайте). */
+const SUBSCRIPTION_NAV_PATH = '/price'
 
 watch(accessibilityBtnRef, setTrigger)
 
+function closeMenu(): void {
+  isMenuOpen.value = false
+}
+
 function onBurgerClick(): void {
   closeAccessibilityModal()
-  toggleFooter()
+  isMenuOpen.value = !isMenuOpen.value
 }
 
 function onAccessibilityClick(): void {
-  closeFooter()
+  closeMenu()
   openAccessibilityModal()
 }
+
+function onKeydown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') closeMenu()
+}
+
+function onPointerDown(event: PointerEvent): void {
+  const target = event.target
+
+  if (!isMenuOpen.value || (target instanceof Node && headerRef.value?.contains(target))) return
+
+  closeMenu()
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+  window.addEventListener('pointerdown', onPointerDown)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('pointerdown', onPointerDown)
+})
 
 watch(
   () => site.value?.theme.logoSrc,
@@ -41,6 +75,10 @@ function isActive(to: string): boolean {
   return route.path === to || route.path.startsWith(`${to}/`)
 }
 
+function isSubscriptionNavItem(to: string): boolean {
+  return to === SUBSCRIPTION_NAV_PATH
+}
+
 function onSearchSubmit(event: Event): void {
   event.preventDefault()
 }
@@ -48,100 +86,103 @@ function onSearchSubmit(event: Event): void {
 watch(
   () => route.path,
   () => {
-    closeFooter()
+    closeMenu()
     closeAccessibilityModal()
   },
 )
 </script>
 
 <template>
-  <header :class="$style.header" role="banner">
-    <div :class="$style.gradientBar">
-      <div :class="[$style.gradientInner, 'site-shell']">
-        <AppHeaderLogo variant="mobile" :image-failed="logoFailed" @image-error="logoFailed = true" />
-
-        <div :class="$style.gradientActions">
-          <form
-            :class="$style.search"
-            role="search"
-            aria-label="Поиск по сайту"
-            @submit="onSearchSubmit"
-          >
-            <label class="visually-hidden" for="site-search">Поиск</label>
-            <input
-              id="site-search"
-              :class="$style.searchInput"
-              type="search"
-              name="q"
-              placeholder="Поиск…"
-              autocomplete="off"
-            />
-            <button :class="$style.searchBtn" type="submit" aria-label="Найти">
-              <svg
-                :class="$style.searchIcon"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <path
-                  fill="currentColor"
-                  d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                />
-              </svg>
-            </button>
-          </form>
-
-          <button
-            :class="[$style.burgerBtn, isFooterOpen && $style.burgerBtnOpen]"
-            type="button"
-            aria-controls="site-footer-panel"
-            :aria-expanded="isFooterOpen"
-            :aria-label="isFooterOpen ? 'Скрыть меню сайта' : 'Открыть меню сайта'"
-            @click="onBurgerClick"
-          >
-            <span :class="$style.burgerIcon" aria-hidden="true" />
-            <span :class="$style.burgerIcon" aria-hidden="true" />
-            <span :class="$style.burgerIcon" aria-hidden="true" />
-          </button>
-
-          <button
-            ref="accessibilityBtnRef"
-            :class="$style.burgerBtn"
-            type="button"
-            aria-haspopup="dialog"
-            :aria-expanded="isAccessibilityOpen"
-            aria-label="Версия сайта для людей с ограниченными возможностями"
-            @click="onAccessibilityClick"
-          >
-            <svg :class="$style.eyeIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path
-                fill="currentColor"
-                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-              />
-            </svg>
-          </button>
-        </div>
+  <header ref="headerRef" :class="$style.header" role="banner">
+    <div :class="$style.logoBar">
+      <div :class="[$style.logoInner, 'site-shell']">
+        <AppHeaderLogo :image-failed="logoFailed" @image-error="logoFailed = true" />
       </div>
     </div>
 
-    <div :class="$style.mainBar">
-      <div :class="[$style.mainInner, 'site-shell']">
-        <AppHeaderLogo variant="desktop" :image-failed="logoFailed" @image-error="logoFailed = true" />
+    <div :class="$style.navBar">
+      <div :class="[$style.navInner, 'site-shell']">
+        <button
+          :class="[$style.roundBtn, $style.burgerBtn, isMenuOpen && $style.burgerBtnOpen]"
+          type="button"
+          aria-controls="main-nav"
+          :aria-expanded="isMenuOpen"
+          :aria-label="isMenuOpen ? 'Закрыть меню' : 'Открыть меню'"
+          @click="onBurgerClick"
+        >
+          <span :class="$style.burgerIcon" aria-hidden="true" />
+          <span :class="$style.burgerIcon" aria-hidden="true" />
+          <span :class="$style.burgerIcon" aria-hidden="true" />
+        </button>
 
-        <nav id="main-nav" :class="$style.nav" aria-label="Основная навигация">
+        <nav
+          id="main-nav"
+          :class="[$style.nav, isMenuOpen && $style.navOpen]"
+          aria-label="Основная навигация"
+        >
           <ul :class="$style.navList" role="list">
-            <li v-for="item in site?.nav" :key="item.to">
+            <li
+              v-for="item in site?.nav"
+              :key="item.to"
+              :class="isSubscriptionNavItem(item.to) && $style.navItemAccent"
+            >
               <NuxtLink
                 :to="item.to"
                 active-class=""
                 exact-active-class=""
-                :class="[$style.navLink, isActive(item.to) && $style.navLinkActive]"
+                :class="[
+                  $style.navLink,
+                  isActive(item.to) && $style.navLinkActive,
+                  isSubscriptionNavItem(item.to) && $style.navLinkAccent,
+                ]"
               >
                 {{ item.label }}
               </NuxtLink>
             </li>
           </ul>
         </nav>
+
+        <form
+          :class="$style.search"
+          role="search"
+          aria-label="Поиск по сайту"
+          @submit="onSearchSubmit"
+        >
+          <label class="visually-hidden" for="site-search">Поиск</label>
+          <input
+            id="site-search"
+            :class="$style.searchInput"
+            type="search"
+            name="q"
+            placeholder="Поиск…"
+            autocomplete="off"
+          />
+          <button :class="$style.searchBtn" type="submit" aria-label="Найти">
+            <svg :class="$style.searchIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path
+                fill="currentColor"
+                d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+              />
+            </svg>
+          </button>
+        </form>
+
+        <button
+          ref="accessibilityBtnRef"
+          :class="[$style.roundBtn, $style.accessibilityBtn]"
+          type="button"
+          aria-haspopup="dialog"
+          :aria-expanded="isAccessibilityOpen"
+          aria-label="Версия сайта для людей с ограниченными возможностями"
+          @click="onAccessibilityClick"
+        >
+          <svg :class="$style.eyeIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              fill="currentColor"
+              d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+            />
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -149,6 +190,17 @@ watch(
 
 <style module lang="scss">
 @use '~/assets/styles/tools/mixins' as mx;
+@use '~/assets/styles/variables/resolutions' as bp;
+
+/* Горизонтальное меню с кнопкой подписки помещается в строку только с этой
+   ширины: ниже показываем бургер, иначе «Подписаться» уходит на вторую строку */
+$nav-min-width: 1240px;
+
+@mixin from-nav {
+  @media (min-width: #{$nav-min-width}) {
+    @content;
+  }
+}
 
 .header {
   position: sticky;
@@ -156,34 +208,122 @@ watch(
   z-index: 100;
 }
 
-.gradientBar {
-  background: var(--site-header-gradient);
+.logoBar {
+  background: var(--fs-color-bg);
 }
 
-.gradientInner {
+.logoInner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: 6px;
+
+  @include mx.from-tablet {
+    padding-block: var(--fs-space-1);
+  }
+
+  @include mx.from-desktop {
+    padding-block: 10px;
+  }
+}
+
+.navBar {
+  position: relative;
+  background: var(--fs-color-bg);
+  border-top: 1px solid var(--fs-color-border);
+  border-bottom: 1px solid var(--fs-color-border);
+}
+
+.navInner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--fs-space-1);
-  min-height: 44px;
+  min-height: 48px;
   padding-block: 6px;
 
-  @include mx.from-desktop {
-    justify-content: flex-end;
+  @include from-nav {
     gap: var(--fs-space-2);
-    min-height: 48px;
+    min-height: 56px;
     padding-block: var(--fs-space-1);
   }
 }
 
-.gradientActions {
+.roundBtn {
   display: flex;
   align-items: center;
+  justify-content: center;
   flex-shrink: 0;
-  gap: 6px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--site-color-primary);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  transition: box-shadow 0.2s ease;
 
-  @include mx.from-desktop {
-    gap: var(--fs-space-2);
+  &:hover {
+    box-shadow: 0 4px 12px rgb(0 0 0 / 18%);
+  }
+
+  &:focus-visible {
+    outline-color: var(--site-color-primary);
+    outline-offset: 2px;
+  }
+}
+
+.burgerBtn {
+  flex-direction: column;
+  gap: 3px;
+  width: 36px;
+  height: 36px;
+
+  @include from-nav {
+    display: none;
+  }
+}
+
+.burgerIcon {
+  display: block;
+  width: 14px;
+  height: 2px;
+  background: currentcolor;
+  border-radius: 1px;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.burgerBtnOpen {
+  .burgerIcon:nth-child(1) {
+    transform: translateY(5px) rotate(45deg);
+  }
+
+  .burgerIcon:nth-child(2) {
+    opacity: 0;
+  }
+
+  .burgerIcon:nth-child(3) {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+}
+
+.accessibilityBtn {
+  width: 36px;
+  height: 36px;
+
+  @include mx.from-tablet {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.eyeIcon {
+  display: block;
+  width: 18px;
+  height: 18px;
+
+  @include mx.from-tablet {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -192,16 +332,19 @@ watch(
   align-items: center;
   flex: 1;
   min-width: 0;
-  max-width: 132px;
-  background: rgb(255 255 255 / 22%);
+  border: 1px solid var(--fs-color-border);
   border-radius: 999px;
   overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 35%);
+  background: color-mix(in srgb, var(--site-color-primary) 6%, var(--fs-color-background));
+  transition: border-color 0.15s ease;
+
+  &:focus-within {
+    border-color: color-mix(in srgb, var(--site-color-primary) 45%, var(--fs-color-border));
+  }
 
   @include mx.from-desktop {
     flex: none;
-    max-width: 280px;
-    width: 100%;
+    width: 200px;
   }
 }
 
@@ -211,13 +354,13 @@ watch(
   padding: 6px 8px 6px 12px;
   border: none;
   background: transparent;
-  color: #fff;
+  color: var(--fs-color-text);
   font-size: var(--fs-text-xs);
   font-family: inherit;
   outline: none;
 
   &::placeholder {
-    color: rgb(255 255 255 / 75%);
+    color: var(--fs-color-text-muted);
   }
 
   @include mx.from-desktop {
@@ -233,20 +376,20 @@ watch(
   flex-shrink: 0;
   width: 32px;
   height: 32px;
-  color: #fff;
+  color: var(--site-color-primary);
   transition: background 0.15s ease;
 
   &:hover {
-    background: rgb(255 255 255 / 12%);
+    background: color-mix(in srgb, var(--site-color-primary) 10%, transparent);
   }
 
   &:focus-visible {
-    outline-color: #fff;
+    outline-color: var(--site-color-primary);
   }
 
   @include mx.from-desktop {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
   }
 }
 
@@ -261,151 +404,64 @@ watch(
   }
 }
 
-.burgerBtn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--site-color-primary);
-  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
-  transition: box-shadow 0.2s ease;
+.nav {
+  display: none;
 
-  &:hover {
-    box-shadow: 0 4px 12px rgb(0 0 0 / 18%);
-  }
-
-  &:focus-visible {
-    outline-color: #fff;
-    outline-offset: 2px;
-  }
-
-  @include mx.from-desktop {
-    gap: 4px;
-    width: 44px;
-    height: 44px;
+  @include from-nav {
+    display: flex;
+    flex: 1;
+    min-width: 0;
   }
 }
 
-.burgerIcon {
+.navOpen {
   display: block;
-  width: 14px;
-  height: 2px;
-  background: currentcolor;
-  border-radius: 1px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-
-  @include mx.from-desktop {
-    width: 18px;
-  }
-}
-
-.eyeIcon {
-  display: block;
-  width: 18px;
-  height: 18px;
-
-  @include mx.from-desktop {
-    width: 22px;
-    height: 22px;
-  }
-}
-
-.burgerBtnOpen {
-  .burgerIcon:nth-child(1) {
-    transform: translateY(5px) rotate(45deg);
-
-    @include mx.from-desktop {
-      transform: translateY(6px) rotate(45deg);
-    }
-  }
-
-  .burgerIcon:nth-child(2) {
-    opacity: 0;
-  }
-
-  .burgerIcon:nth-child(3) {
-    transform: translateY(-5px) rotate(-45deg);
-
-    @include mx.from-desktop {
-      transform: translateY(-6px) rotate(-45deg);
-    }
-  }
-}
-
-.mainBar {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   background: var(--fs-color-bg);
   border-bottom: 1px solid var(--fs-color-border);
-}
+  box-shadow: 0 12px 24px rgb(0 0 0 / 12%);
 
-.mainInner {
-  display: flex;
-  align-items: center;
-  min-height: 48px;
-  padding-block: var(--fs-space-1);
-
-  @include mx.from-desktop {
-    justify-content: space-between;
-    gap: var(--fs-space-2);
-    min-height: 80px;
-    padding-block: var(--fs-space-2);
-  }
-}
-
-.nav {
-  flex: 1;
-  min-width: 0;
-  width: 100%;
-
-  @include mx.from-desktop {
+  @include from-nav {
     display: flex;
-    justify-content: flex-end;
-    width: auto;
+    position: static;
+    background: none;
+    border-bottom: 0;
+    box-shadow: none;
   }
 }
 
 .navList {
   display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: var(--fs-space-2);
-  margin: 0 calc(-1 * var(--fs-space-2));
-  padding: 2px var(--fs-space-2);
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-padding-inline: var(--fs-space-2);
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  touch-action: pan-x;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: var(--fs-space-1) var(--fs-space-2);
+  list-style: none;
 
-  &::-webkit-scrollbar {
-    display: none;
+  @include mx.from-tablet {
+    padding-inline: var(--fs-space-3);
   }
 
-  @include mx.from-desktop {
+  @include from-nav {
+    flex-direction: row;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    margin: 0;
+    align-items: center;
+    gap: var(--fs-space-1) var(--fs-space-2);
     padding: 0;
-    overflow: visible;
-    touch-action: auto;
-    scroll-padding-inline: 0;
-    gap: var(--fs-space-2) var(--fs-space-3);
-  }
 
-  > li {
-    flex-shrink: 0;
+    /* Самый тесный диапазон — поджимаем отступы, чтобы строка не ломалась */
+    @media (max-width: #{bp.$desktopMedium - 1px}) {
+      column-gap: 12px;
+    }
   }
 }
 
 .navLink {
   display: block;
-  padding: 4px 2px;
+  padding: 8px 0;
   font-size: var(--fs-text-xs);
   font-weight: var(--fs-weight-semibold);
   text-transform: uppercase;
@@ -426,6 +482,17 @@ watch(
   @include mx.from-tablet {
     font-size: var(--fs-text-sm);
   }
+
+  @include from-nav {
+    padding: 4px 2px;
+    font-size: 0.8125rem;
+    letter-spacing: 0.05em;
+
+    /* Узкое горизонтальное меню: пункты должны оставаться в одну строку */
+    @media (max-width: #{bp.$desktopMedium - 1px}) {
+      font-size: var(--fs-text-xs);
+    }
+  }
 }
 
 .navLinkActive {
@@ -438,5 +505,44 @@ watch(
   &:hover {
     color: var(--site-color-accent);
   }
+}
+
+/* Подписка — кнопка у поиска на десктопе, прямоугольник с текстом как на старом сайте */
+.navItemAccent {
+  @include from-nav {
+    margin-left: auto;
+  }
+}
+
+.navLinkAccent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  /* Сверху 2px, снизу 0 — оптическая компенсация: у прописных нет выносных
+     элементов под базовой линией, поэтому текст кажется выше центра */
+  padding: 2px 16px 0;
+  line-height: 1;
+  border-radius: var(--site-radius-sm);
+  background: var(--site-color-accent);
+  color: #fff;
+  font-weight: var(--fs-weight-bold);
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--site-color-accent) 88%, #000);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline-color: var(--site-color-accent);
+    outline-offset: 2px;
+  }
+}
+
+.navLinkAccent.navLinkActive {
+  background: color-mix(in srgb, var(--site-color-accent) 88%, #000);
+  color: #fff;
+  text-decoration: none;
 }
 </style>

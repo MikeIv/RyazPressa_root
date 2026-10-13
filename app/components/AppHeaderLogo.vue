@@ -1,6 +1,5 @@
 <script setup lang="ts">
 const props = defineProps<{
-  variant: 'mobile' | 'desktop'
   imageFailed: boolean
 }>()
 
@@ -20,11 +19,7 @@ const showImage = computed(
 </script>
 
 <template>
-  <NuxtLink
-    to="/"
-    :class="[$style.logo, props.variant === 'mobile' ? $style.mobile : $style.desktop]"
-    :aria-label="ariaLabel"
-  >
+  <NuxtLink to="/" :class="$style.logo" :aria-label="ariaLabel">
     <img
       v-if="showImage"
       :src="site?.theme.logoSrc"
@@ -39,66 +34,35 @@ const showImage = computed(
 </template>
 
 <style module lang="scss">
-@use '~/assets/styles/tools/mixins' as mx;
-
 .logo {
   display: flex;
   align-items: center;
+  justify-content: center;
+  max-width: 100%;
   color: var(--site-color-primary);
 
   &:focus-visible {
     outline-color: var(--site-color-primary);
-  }
-}
-
-.mobile {
-  flex: 1;
-  min-width: 0;
-  max-width: min(200px, 48vw);
-
-  @include mx.from-desktop {
-    display: none;
-  }
-
-  .img {
-    max-height: 32px;
-  }
-
-  .text {
-    font-size: var(--fs-text-sm);
-  }
-}
-
-.desktop {
-  display: none;
-  flex-shrink: 0;
-  max-width: 300px;
-
-  @include mx.from-desktop {
-    display: flex;
-  }
-
-  .img {
-    max-height: 56px;
-  }
-
-  .text {
-    font-size: var(--fs-text-xl);
+    outline-offset: 4px;
   }
 }
 
 .img {
   display: block;
-  width: 100%;
+  width: auto;
   height: auto;
+  max-width: 100%;
+  max-height: clamp(26px, 4.4vw, 40px);
   object-fit: contain;
-  object-position: left center;
+  object-position: center;
 }
 
 .text {
   font-family: var(--fs-font-display);
+  font-size: clamp(var(--fs-text-lg), 4vw, var(--fs-text-3xl));
   font-weight: var(--fs-weight-bold);
   letter-spacing: -0.02em;
   line-height: 1;
+  text-align: center;
 }
 </style>
