@@ -36,3 +36,11 @@ CURSOR_RULES_EXPORT.md
 .env
 .env.*
 !.env.example
+
+# Рабочие файлы задач (шаблоны и PROJECT.md остаются в git)
+.planning/brief.md
+.planning/plan.md
+.planning/state.md
+
+AGENTS.local.md
+.dsh/
