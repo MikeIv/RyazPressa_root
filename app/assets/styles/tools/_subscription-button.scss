@@ -1,0 +1,24 @@
+/* Акцентная кнопка подписки — общая для шапки и футера */
+@mixin button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 0 16px;
+  line-height: 1;
+  border-radius: var(--site-radius-sm);
+  background: var(--site-color-accent);
+  color: #fff;
+  font-weight: var(--fs-weight-semibold);
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--site-color-accent) 88%, #000);
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline-color: var(--site-color-primary);
+    outline-offset: 2px;
+  }
+}

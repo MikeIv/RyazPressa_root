@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { isRootNewsArticlePath, type NewsArticlePathPrefix } from '#shared/utils/newsArticlePath'
+import { isSubscriptionNavItem } from '#shared/utils/sectionNav'
 import { useAccessibilityModal } from '~/composables/useAccessibilityModal'
 
 const { site } = useSiteConfig()
@@ -15,9 +16,6 @@ const headerRef = ref<HTMLElement | null>(null)
 const accessibilityBtnRef = ref<HTMLButtonElement | null>(null)
 const logoFailed = ref(false)
 const isMenuOpen = ref(false)
-
-/** Пункт меню раздела подписки — на десктопе кнопка у поиска (как на старом сайте). */
-const SUBSCRIPTION_NAV_PATH = '/price'
 
 watch(accessibilityBtnRef, setTrigger)
 
@@ -73,10 +71,6 @@ function isActive(to: string): boolean {
     return false
   }
   return route.path === to || route.path.startsWith(`${to}/`)
-}
-
-function isSubscriptionNavItem(to: string): boolean {
-  return to === SUBSCRIPTION_NAV_PATH
 }
 
 function onSearchSubmit(event: Event): void {
@@ -190,6 +184,7 @@ watch(
 
 <style module lang="scss">
 @use '~/assets/styles/tools/mixins' as mx;
+@use '~/assets/styles/tools/subscription-button' as subscription;
 @use '~/assets/styles/variables/resolutions' as bp;
 
 /* Горизонтальное меню с кнопкой подписки помещается в строку только с этой
@@ -515,29 +510,11 @@ $nav-min-width: 1240px;
 }
 
 .navLinkAccent {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 32px;
-  /* Сверху 2px, снизу 0 — оптическая компенсация: у прописных нет выносных
-     элементов под базовой линией, поэтому текст кажется выше центра */
+  @include subscription.button;
+
+  /* У прописных нет выносных элементов под базовой линией — опускаем текст на 1px */
   padding: 2px 16px 0;
-  line-height: 1;
-  border-radius: var(--site-radius-sm);
-  background: var(--site-color-accent);
-  color: #fff;
   font-weight: var(--fs-weight-bold);
-  transition: background 0.15s ease;
-
-  &:hover {
-    background: color-mix(in srgb, var(--site-color-accent) 88%, #000);
-    color: #fff;
-  }
-
-  &:focus-visible {
-    outline-color: var(--site-color-accent);
-    outline-offset: 2px;
-  }
 }
 
 .navLinkAccent.navLinkActive {

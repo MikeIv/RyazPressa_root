@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFooterContacts } from '~/composables/useFooterContacts'
 import { contactTelHref, expandContactPhoneNumbers } from '#shared/utils/normalizeContactsApi'
+import { isSubscriptionNavItem } from '#shared/utils/sectionNav'
 
 const { site } = useSiteConfig()
 const { contacts, showContacts } = useFooterContacts()
@@ -61,7 +62,11 @@ const footerMetaLines = computed(() => {
       <nav v-if="site?.nav.length" :class="$style.nav" aria-label="Навигация в футере">
         <ul :class="$style.navList" role="list">
           <li v-for="item in site.nav" :key="item.to">
-            <NuxtLink :to="item.to" :class="$style.navLink">{{ item.label }}</NuxtLink>
+            <NuxtLink
+              :to="item.to"
+              :class="[$style.navLink, isSubscriptionNavItem(item.to) && $style.navLinkAccent]"
+              >{{ item.label }}</NuxtLink
+            >
           </li>
         </ul>
       </nav>
@@ -71,6 +76,7 @@ const footerMetaLines = computed(() => {
 
 <style module lang="scss">
 @use '~/assets/styles/tools/mixins' as mx;
+@use '~/assets/styles/tools/subscription-button' as subscription;
 
 .footer {
   background-color: var(--fs-color-surface);
@@ -81,15 +87,8 @@ const footerMetaLines = computed(() => {
 .inner {
   display: flex;
   flex-direction: column;
-  gap: var(--fs-space-2);
+  gap: var(--fs-space-3);
   padding-block: var(--fs-space-3);
-
-  @include mx.from-tablet {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-    column-gap: var(--fs-space-4);
-  }
 }
 
 .main {
@@ -97,6 +96,15 @@ const footerMetaLines = computed(() => {
   flex-direction: column;
   gap: var(--fs-space-2);
   min-width: 0;
+
+  /* Контакты и правовой блок — две колонки с фиксированной пропорцией:
+     иначе блок меню забирал ширину и текст сжимался в узкий столбик */
+  @include mx.from-tablet {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--fs-space-2) var(--fs-space-4);
+  }
 }
 
 .contacts,
@@ -149,9 +157,11 @@ const footerMetaLines = computed(() => {
   }
 }
 
+/* Меню — отдельная строка во всю ширину под информационными блоками */
 .nav {
   @include mx.from-tablet {
-    justify-self: end;
+    padding-top: var(--fs-space-3);
+    border-top: 1px solid var(--fs-color-border);
   }
 }
 
@@ -177,7 +187,7 @@ const footerMetaLines = computed(() => {
   gap: var(--fs-space-1) var(--fs-space-2);
 
   @include mx.from-tablet {
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 }
 
@@ -189,5 +199,10 @@ const footerMetaLines = computed(() => {
   &:hover {
     color: var(--site-color-primary);
   }
+}
+
+/* Подписка — та же акцентная кнопка, что в шапке */
+.navLinkAccent {
+  @include subscription.button;
 }
 </style>
