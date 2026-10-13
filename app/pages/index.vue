@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { NewsItem, PaginatedMeta, PaginatedResponse } from '#shared/types/api'
 
+import { ryazpressaHomeBanners, ryazpressaSocialLinks } from '#shared/sites/ryazpressa'
 import { useApi, useApiFetch } from '~/composables/useApi'
 import { useSiteConfig } from '~/composables/useSiteConfig'
 
@@ -104,7 +105,6 @@ useHead({
         <div :class="$style.listBlock">
           <NewsFeedListSkeleton :count="HOME_LIST_BATCH" />
         </div>
-        <NewsAsideTodaySkeleton :class="$style.aside" />
       </template>
 
       <template v-else>
@@ -127,8 +127,14 @@ useHead({
             {{ loadingMore ? 'Загрузка…' : 'Показать еще' }}
           </button>
         </div>
-        <NewsAsideToday :class="$style.aside" :items="popularNews" :error="hasError" />
       </template>
+
+      <div :class="$style.aside">
+        <BannerSlider :items="ryazpressaHomeBanners" />
+        <AppSocialLinks :links="ryazpressaSocialLinks" />
+        <NewsAsideTodaySkeleton v-if="pending" />
+        <NewsAsideToday v-else :items="popularNews" :error="hasError" />
+      </div>
     </section>
   </div>
 </template>
@@ -187,8 +193,7 @@ useHead({
 }
 
 .featuredBlock,
-.listBlock,
-.aside {
+.listBlock {
   min-width: 0;
 }
 
@@ -244,7 +249,12 @@ useHead({
   grid-area: featured;
 }
 
+/* Правая колонка: баннеры → соцсети → «Популярные новости» — порядок legacy-сайта */
 .aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--fs-space-3);
+  min-width: 0;
   grid-area: aside;
 }
 </style>

@@ -39,6 +39,17 @@ export interface SiteNavItem {
   to: string
 }
 
+/** Соцсеть редакции: определяет иконку в блоке ссылок. */
+export type SocialNetwork = 'telegram' | 'vk' | 'ok'
+
+/** Ссылка на соцсеть редакции (сайдбар главной). */
+export interface SocialLink {
+  network: SocialNetwork
+  /** Подпись для `aria-label` и `title`. */
+  label: string
+  href: string
+}
+
 /** Полный конфиг сайта (сервер + shared/sites). */
 export interface SiteConfig {
   slug: string

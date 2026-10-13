@@ -64,6 +64,17 @@ export interface NewsListParams {
   period?: NewsListPeriod
 }
 
+/**
+ * Баннер (рекламный блок) — картинка-ссылка.
+ * На legacy-сайте такие баннеры отдавал Advanced Ads; в API — будущий `GET /api/banners`.
+ */
+export interface Banner {
+  id: string
+  /** Внешняя или внутренняя ссылка баннера. */
+  link: string
+  image: ImageAsset
+}
+
 /** Элемент фотогалереи. */
 export interface GalleryItem {
   id: string
