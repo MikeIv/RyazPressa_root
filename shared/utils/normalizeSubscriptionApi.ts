@@ -91,13 +91,7 @@ export function buildPaperOrderRequest(params: {
   }
 }
 
-function readPaperIds(raw: unknown): string[] {
-  if (!Array.isArray(raw)) return []
-
-  return raw.map((item) => (item == null ? '' : String(item))).filter((item) => item.length > 0)
-}
-
-/** Ответ оформления подписки (legacy `/ajax_paper_order.php`, будущий `/api/paper-orders`). */
+/** Ответ оформления подписки (`POST /api/order`): `formUrl` — ссылка на оплату. */
 export function normalizePaperOrderResponse(raw: unknown): PaperOrderResponse {
   if (!raw || typeof raw !== 'object') {
     throw new Error('Invalid API response')
@@ -114,18 +108,4 @@ export function normalizePaperOrderResponse(raw: unknown): PaperOrderResponse {
     error: typeof error === 'string' && error.trim() ? error : undefined,
     formUrl: typeof formUrl === 'string' && formUrl.trim() ? formUrl : undefined,
   }
-}
-
-export function parsePaperOrderRequestBody(raw: unknown): PaperOrderRequest | null {
-  if (!raw || typeof raw !== 'object') return null
-
-  const body = raw as Record<string, unknown>
-  const email = typeof body.email === 'string' ? body.email.trim() : ''
-  const type = body.type == null ? '' : String(body.type)
-  const dt = typeof body.dt === 'string' ? body.dt.trim() : ''
-  const paper = readPaperIds(body.paper ?? body['paper[]'])
-
-  if (!email || !type || !dt || !paper.length) return null
-
-  return { email, type, dt, paper }
 }

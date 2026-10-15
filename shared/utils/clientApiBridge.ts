@@ -56,7 +56,7 @@ export function transformClientApiResponse(contractPath: string, raw: unknown): 
     return normalizePapersListResponse(raw)
   }
 
-  if (pathname === '/api/paper-orders') {
+  if (pathname === '/api/order') {
     return normalizePaperOrderResponse(raw)
   }
 

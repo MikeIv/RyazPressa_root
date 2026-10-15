@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { useSectionPageBreadcrumbs } from '~/composables/useBreadcrumbs'
+import { usePaperOrder } from '~/composables/usePaperOrder'
 import type { ListResponse, Paper, Tariff } from '#shared/types/api'
 import { buildPaperOrderRequest } from '#shared/utils/normalizeSubscriptionApi'
+import { readPaperOrderSubmitError, resolvePaperOrderOutcome } from '#shared/utils/paperOrderOutcome'
 import { nextSubscriptionStartIsoDate } from '#shared/utils/subscriptionStartDate'
-import {
-  readPaperOrderSubmitError,
-  resolvePaperOrderOutcome,
-  submitLegacyPaperOrder,
-} from '#shared/utils/submitLegacyPaperOrder'
 
 definePageMeta({
   middleware: 'section',
@@ -108,6 +105,16 @@ const papers = computed(() => papersData.value?.data ?? [])
 const pending = computed(() => tariffsPending.value || papersPending.value)
 const loadError = computed(() => Boolean(tariffsError.value || papersError.value))
 
+const { submitPaperOrder } = usePaperOrder()
+const route = useRoute()
+
+/** Строка результата оплаты: Сбербанк возвращает на `/price/?result=…`. */
+const paymentResult = computed(() => {
+  const value = route.query.result
+
+  return typeof value === 'string' ? value.trim() : ''
+})
+
 const email = ref('')
 const selectedPaperIds = ref<string[]>([])
 const selectedTariffId = ref('')
@@ -161,7 +168,7 @@ async function onSubmit(event: Event): Promise<void> {
       paperIds: selectedPaperIds.value,
     })
 
-    const outcome = resolvePaperOrderOutcome(order, await submitLegacyPaperOrder(order))
+    const outcome = resolvePaperOrderOutcome(await submitPaperOrder(order))
 
     if (outcome.kind === 'redirect') {
       window.location.assign(outcome.url)
@@ -190,6 +197,8 @@ const breadcrumbs = useSectionPageBreadcrumbs('price', 'Прайс лист')
   <div :class="$style.page">
     <UiBreadcrumbs :items="breadcrumbs" />
     <h1 :class="$style.pageTitle">Прайс лист</h1>
+
+    <p v-if="paymentResult" :class="$style.paymentResult" role="status">{{ paymentResult }}</p>
 
     <p v-if="pending" :class="$style.status" role="status">Загрузка…</p>
     <p v-else-if="loadError" :class="$style.status" role="alert">
@@ -389,6 +398,17 @@ const breadcrumbs = useSectionPageBreadcrumbs('price', 'Прайс лист')
   color: var(--site-color-text);
   background: color-mix(in srgb, var(--site-color-accent) 8%, var(--fs-color-surface-alt));
   border-left: 4px solid var(--site-color-accent);
+  border-radius: var(--site-radius-sm);
+}
+
+.paymentResult {
+  margin: 0 0 var(--fs-space-4);
+  padding: var(--fs-space-3);
+  font-size: var(--fs-text-sm);
+  line-height: var(--fs-leading-relaxed);
+  color: var(--site-color-text);
+  background: color-mix(in srgb, var(--site-color-primary) 8%, var(--fs-color-surface-alt));
+  border-left: 4px solid var(--site-color-primary);
   border-radius: var(--site-radius-sm);
 }
 

@@ -168,7 +168,7 @@ export interface Paper {
   title: string
 }
 
-/** Тело заказа подписки (legacy `type`/`dt`/`paper[]`, будущий `POST /api/paper-orders`). */
+/** Тело заказа подписки (`POST /api/order`); поля повторяют legacy-форму `#order_form`. */
 export interface PaperOrderRequest {
   email: string
   /** ID тарифа. */
@@ -179,7 +179,10 @@ export interface PaperOrderRequest {
   paper: string[]
 }
 
-/** Ответ оформления подписки (редирект на оплату или успех без оплаты). */
+/**
+ * Ответ `POST /api/order`: ссылка на оплату Сбербанка в `formUrl`,
+ * без неё — успех без оплаты (бесплатный тариф).
+ */
 export interface PaperOrderResponse {
   success: boolean
   orderId: string
