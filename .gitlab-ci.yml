@@ -41,3 +41,19 @@ generate:
     paths:
       - .output/public/
     expire_in: 2 weeks
+
+deploy:
+  stage: deploy
+  before_script:
+    - source ~/.bashrc
+  script:
+    - cd /var/www/pressahub/root
+    - git fetch ${CI_REPOSITORY_URL} ${CI_COMMIT_BRANCH}
+    - git reset --hard FETCH_HEAD
+    - git clean -fd
+    - pnpm generate
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  tags:
+    - shell
+    - ryazan
