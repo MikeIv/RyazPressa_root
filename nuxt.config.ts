@@ -26,6 +26,15 @@ export default defineNuxtConfig({
     timeline: { enabled: isDev },
   },
 
+  /**
+   * Nuxt 4.6 без явного host резолвит `devServer.host` в `{}`,
+   * и `nuxt dev` падает: `hostname.toLowerCase is not a function`.
+   * Loopback — тот же адрес, что сервер слушал раньше.
+   */
+  devServer: {
+    host: 'localhost',
+  },
+
   typescript: {
     strict: true,
     /** Проверка типов на `nuxt build` / `nuxt generate`, без замедления каждого сохранения в dev */
